@@ -51,13 +51,13 @@ contract DApes is ERC1155, Ownable {
         bytes32 kh = keyHash(collectionID, nonce, msg.sender);
         require(ECDSA.recover(kh, signature) == gatekeeper, "Invalid access key");
         require(!_usedNonces.get(nonce), "Key already used");
-        require(collections[collectionID].nextID.current() < collections[collectionID].maxSupply, "Minted out");
+        uint256 newID = collections[collectionID].nextID.current();
+        require(newID < collections[collectionID].maxSupply, "Minted out");
         
         _usedNonces.set(nonce);
-        uint256 newID = collections[collectionID].nextID.current();
         collections[collectionID].nextID.increment();
-        _mint(msg.sender, tokenID(collectionID, newID), 1, "");
         _supply.increment();
+        _mint(msg.sender, tokenID(collectionID, newID), 1, "");
     }
 
     function totalSupply() public view returns (uint256) {

@@ -5,9 +5,11 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
 
 contract DApes is ERC1155, Ownable {
     using Counters for Counters.Counter;
+    using BitMaps for BitMaps.BitMap;
 
     struct Collection {
         Counters.Counter nextID;
@@ -18,8 +20,8 @@ contract DApes is ERC1155, Ownable {
     uint256 public constant MAX_COLLECTION_SIZE = 256_000; 
     address public gatekeeper;
 
-    mapping(bytes32 => bool) public usedKeys;
-    
+    BitMaps.BitMap private _usedNonces;
+
     Collection[] public collections;
 
     constructor(address aGatekeeper, string memory uri) ERC1155(uri) {
@@ -48,10 +50,10 @@ contract DApes is ERC1155, Ownable {
     function mint(uint256 collectionID, uint256 nonce, bytes memory signature) public {
         bytes32 kh = keyHash(collectionID, nonce, msg.sender);
         require(ECDSA.recover(kh, signature) == gatekeeper, "Invalid access key");
-        require(!usedKeys[kh], "Key already used");
+        require(!_usedNonces.get(nonce), "Key already used");
         require(collections[collectionID].nextID.current() < collections[collectionID].maxSupply, "Minted out");
         
-        usedKeys[kh] = true;
+        _usedNonces.set(nonce);
         _mint(msg.sender, tokenID(collectionID, collections[collectionID].nextID.current()), 1, "");
         collections[collectionID].nextID.increment();
         _supply.increment();

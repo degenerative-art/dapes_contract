@@ -63,8 +63,8 @@ describe("DApes", function () {
     
     await expect(dapesContract.connect(addr2).mint(0, nonce, await gatekeeper.signMessage(ethers.utils.arrayify(packKey(0, nonce, addr2.address))))).to.be.not.reverted;
     await expect(dapesContract.connect(addr2).mint(0, nonce, await gatekeeper.signMessage(ethers.utils.arrayify(packKey(0, nonce, addr2.address))))).to.be.revertedWith("Key already used");
-
-    while (nonce < 9) {
+    nonce++;
+    while (nonce < 10) {
       await expect(dapesContract.connect(addr1).mint(0, nonce, await gatekeeper.signMessage(ethers.utils.arrayify(packKey(0, nonce, addr1.address))))).to.be.not.reverted;
       nonce++;
     }

@@ -54,8 +54,9 @@ contract DApes is ERC1155, Ownable {
         require(collections[collectionID].nextID.current() < collections[collectionID].maxSupply, "Minted out");
         
         _usedNonces.set(nonce);
-        _mint(msg.sender, tokenID(collectionID, collections[collectionID].nextID.current()), 1, "");
+        uint256 newID = collections[collectionID].nextID.current();
         collections[collectionID].nextID.increment();
+        _mint(msg.sender, tokenID(collectionID, newID), 1, "");
         _supply.increment();
     }
 

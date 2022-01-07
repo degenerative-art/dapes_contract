@@ -38,6 +38,7 @@ contract DApes is ERC721Enumerable, Ownable {
     }
 
     function addCollection(uint256 start, uint256 end) public onlyOwner {
+        require(collectionIndices.length == 0 || collectionIndices[collectionIndices.length - 1].end <= start, "Collections shouldn't overlap");
         collectionIndices.push(CollectionIndices({ next: start, end: end }));
     }
 

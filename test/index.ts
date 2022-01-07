@@ -85,4 +85,10 @@ describe("DApes", function () {
     expect(await dapesContract.tokenOfOwnerByIndex(addr1.address, 0)).to.equal(0);
     expect(await dapesContract.tokenOfOwnerByIndex(addr1.address, 1)).to.equal(1000);
   });
+
+  it("Shouldn't allow collections overlap", async () => {
+    await dapesContract.addCollection(0, 10);
+    await expect(dapesContract.addCollection(9, 20)).to.be.reverted;
+    await expect(dapesContract.addCollection(10, 20)).to.be.not.reverted;
+  })
 });

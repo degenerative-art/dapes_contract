@@ -64,4 +64,12 @@ contract DApes is ERC1155, Ownable {
     function setURI(string calldata newURI) public onlyOwner {
         _setURI(newURI);
     }
+
+    function name() external pure returns (string memory) {
+        return "DApes";
+    }
+
+    function symbol() external pure returns (string memory) {
+        return "DAPES";
+    }
 }

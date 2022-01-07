@@ -38,7 +38,7 @@ describe("DApes", function () {
   it("Can mint with proper signed key", async function () {
     await dapesContract.addCollection(0, 10);
     let indices = await dapesContract.collectionIndices(0);
-    expect(indices[0]).to.equal(0);
+    expect(indices[0][0]).to.equal(0);
     expect(indices[1]).to.equal(10);
 
     await expect(dapesContract.connect(addr1).mint(0, 0, await gatekeeper.signMessage(ethers.utils.arrayify(packKey(0, 0, addr1.address)))))

@@ -1,13 +1,14 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
 
-contract DApes is ERC1155, Ownable {
+contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
     using Counters for Counters.Counter;
     using BitMaps for BitMaps.BitMap;
 
@@ -24,7 +25,10 @@ contract DApes is ERC1155, Ownable {
 
     Collection[] public collections;
 
-    constructor(address aGatekeeper, string memory uri) ERC1155(uri) {
+    function initialize(address aGatekeeper, string memory uri) public initializer {
+        __ERC1155_init(uri);
+        __Ownable_init_unchained();
+
         gatekeeper = aGatekeeper;
         _supply = Counters.Counter(0);
     }

@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { DApes, DApes__factory } from "../typechain";
 
 function padZeros(s: string, width: number) {
@@ -28,7 +28,7 @@ describe("DApes", function () {
   beforeEach(async function() {
     DApes = await ethers.getContractFactory("DApes");
     [owner, addr1, addr2, gatekeeper, ...addrs] = await ethers.getSigners();
-    dapesContract = await DApes.deploy(gatekeeper.address, "");
+    dapesContract = await upgrades.deployProxy(DApes, [gatekeeper.address, ""]) as DApes;
   })
 
   async function sign(collection:number, nonce:number, addr:string) {

@@ -51,10 +51,14 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
         return collectionID << 128 + relativeTokenID;
     }
 
+    function isKeyUsed(uint256 nonce) public view returns(bool) {
+        return !_usedNonces.get(nonce);
+    }
+
     function mint(uint256 collectionID, uint256 nonce, bytes memory signature) public {
         bytes32 kh = keyHash(collectionID, nonce, msg.sender);
         require(ECDSA.recover(kh, signature) == gatekeeper, "Invalid access key");
-        require(!_usedNonces.get(nonce), "Key already used");
+        require(isKeyUsed(nonce), "Key already used");
         uint256 newID = collections[collectionID].nextID.current();
         require(newID < collections[collectionID].maxSupply, "Minted out");
         

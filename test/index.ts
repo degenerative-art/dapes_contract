@@ -58,7 +58,7 @@ describe("DApes", function () {
   beforeEach(async function() {
     DApes = await ethers.getContractFactory("DApes");
     [owner, addr1, addr2, gatekeeper, ...addrs] = await ethers.getSigners();
-    dapesContract = await upgrades.deployProxy(DApes, [gatekeeper.address, ""]) as DApes;
+    dapesContract = await upgrades.deployProxy(DApes, [gatekeeper.address, ""], { kind: "uups" }) as DApes;
     mintContext = new MintContext(gatekeeper, dapesContract, 0);
   })
 

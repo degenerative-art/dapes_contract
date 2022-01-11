@@ -4,12 +4,13 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
 
-contract DApes is ERC1155PausableUpgradeable, OwnableUpgradeable {
+contract DApes is ERC1155PausableUpgradeable, UUPSUpgradeable, OwnableUpgradeable {
     using Counters for Counters.Counter;
     using BitMaps for BitMaps.BitMap;
 
@@ -28,6 +29,7 @@ contract DApes is ERC1155PausableUpgradeable, OwnableUpgradeable {
     function initialize(address aGatekeeper, string memory uri) public initializer {
         __ERC1155Pausable_init();
         __ERC1155_init_unchained(uri);
+        __UUPSUpgradeable_init();
         __Ownable_init_unchained();
 
         gatekeeper = aGatekeeper;
@@ -57,14 +59,14 @@ contract DApes is ERC1155PausableUpgradeable, OwnableUpgradeable {
     }
 
     function isKeyUsed(uint256 nonce) public view returns(bool) {
-        return !_usedNonces.get(nonce);
+        return _usedNonces.get(nonce);
     }
 
     function mint(uint256 collectionID, uint256 nonce, bytes memory signature) public {
         bytes32 kh = keyHash(collectionID, nonce, msg.sender);
        
         require(ECDSA.recover(kh, signature) == gatekeeper, "Invalid access key");
-        require(isKeyUsed(nonce), "Key already used");
+        require(!isKeyUsed(nonce), "Key already used");
        
         Collection storage collection = collections[collectionID];
         uint256 newID = collection.nextID.current();
@@ -101,4 +103,6 @@ contract DApes is ERC1155PausableUpgradeable, OwnableUpgradeable {
     function unpause() public onlyOwner {
         _unpause();
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }

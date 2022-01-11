@@ -42,6 +42,14 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
         collections.push(Collection({ nextID: Counters.Counter(startID), endID: endID }));
     }
 
+    function amendTopCollection(uint256 newEndID) public onlyOwner {
+        require(collections.length > 0, "No collection to amend");
+        Collection storage top = collections[collections.length - 1];
+        require(top.nextID.current() <= newEndID, "End cuts existing supply");
+
+        top.endID = newEndID;
+    }
+
     function keyHash(uint256 collection, uint256 nonce, address addr) public pure returns (bytes32) {
         return ECDSA.toEthSignedMessageHash(abi.encodePacked(collection, nonce, addr));
     }

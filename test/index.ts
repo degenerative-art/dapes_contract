@@ -148,4 +148,20 @@ describe("DApes", function () {
 
     await dapesContract.addCollection(100, 200);
   })
+
+  it("Can pause", async () => {
+    await dapesContract.addCollection(0, 10);
+    mintContext.connect(addr1);
+
+    await mintContext.mint(0);
+
+    await dapesContract.pause();
+
+    await expect(mintContext.mint(0)).to.be.revertedWith("ERC1155Pausable: token transfer while paused");
+    await dapesContract.amendTopCollection(2);
+
+    await dapesContract.unpause();
+
+    await mintContext.mint(0);
+  })
 });

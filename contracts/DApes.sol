@@ -2,13 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
 
-contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
+contract DApes is ERC1155PausableUpgradeable, OwnableUpgradeable {
     using Counters for Counters.Counter;
     using BitMaps for BitMaps.BitMap;
 
@@ -25,7 +26,8 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
     Collection[] public collections;
 
     function initialize(address aGatekeeper, string memory uri) public initializer {
-        __ERC1155_init(uri);
+        __ERC1155Pausable_init();
+        __ERC1155_init_unchained(uri);
         __Ownable_init_unchained();
 
         gatekeeper = aGatekeeper;
@@ -85,5 +87,13 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
 
     function symbol() external pure returns (string memory) {
         return "DAPES";
+    }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
     }
 }

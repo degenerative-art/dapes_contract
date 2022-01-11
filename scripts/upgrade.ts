@@ -6,17 +6,15 @@
 import { ethers, upgrades } from "hardhat";
 
 async function main() {
-  if (!process.env.GATEKEEPER_ADDR || !process.env.META_URI) {
-    console.error("Please set GATEKEEPER_ADDR and META_URI before calling this script");
+  if (!process.env.DEPLOYED_ADDR) {
+    console.log("Please set DEPLOYED_ADDR before calling this script");
     return 1;
   }
 
   const DApes = await ethers.getContractFactory("DApes");
-  const dapes = await upgrades.deployProxy(DApes, [process.env.GATEKEEPER_ADDR, process.env.META_URI], { kind: "uups"});
+  const dapes = await upgrades.upgradeProxy(process.env.DEPLOYED_ADDR, DApes, { kind: "uups" });
 
-  await dapes.deployed();
-
-  console.log(`DApes deployed at: ${dapes.address}`);
+  console.log(`DApes upgraded at: ${dapes.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

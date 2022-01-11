@@ -36,7 +36,7 @@ describe("DApes", function () {
   }
 
   it("Can mint with proper signed key", async function () {
-    await dapesContract.addCollection(10);
+    await dapesContract.addCollection(0, 10);
     let indices = await dapesContract.collections(0);
     expect(indices[0][0]).to.equal(0);
     expect(indices[1]).to.equal(10);
@@ -46,14 +46,14 @@ describe("DApes", function () {
   });
 
   it("Cannot be minted with stolen key", async function() {
-    await dapesContract.addCollection(10);
+    await dapesContract.addCollection(0, 10);
   
     const stolen_sig = await gatekeeper.signMessage(ethers.utils.arrayify(packKey(0, 0, addr1.address)));
     await expect(dapesContract.connect(addr2).mint(0, 0, stolen_sig)).to.be.revertedWith("Invalid access key");  
   });
 
   it("Can mint with several keys", async function () {
-    await dapesContract.addCollection(10);
+    await dapesContract.addCollection(0, 10);
     
     let nonce = 0;
     await expect(dapesContract.connect(addr1).mint(0, nonce, await gatekeeper.signMessage(ethers.utils.arrayify(packKey(0, nonce, addr1.address))))).to.be.not.reverted;
@@ -73,8 +73,8 @@ describe("DApes", function () {
   });
 
   it("Can mint from two collections at the same time", async () => {
-    await dapesContract.addCollection(5);
-    await dapesContract.addCollection(1000);
+    await dapesContract.addCollection(0, 5);
+    await dapesContract.addCollection(5, 1000);
 
     let nonce = 0;
     let dapes1 = dapesContract.connect(addr1);
@@ -83,6 +83,6 @@ describe("DApes", function () {
     await expect(dapes1.mint(1, nonce, await sign(1, nonce, addr1.address))).to.be.not.reverted;
     nonce++;
     expect(await dapesContract.balanceOf(addr1.address, 0)).to.equal(1);
-    expect(await dapesContract.balanceOf(addr1.address, await dapesContract.tokenID(1, 1000))).to.equal(1);
+    expect(await dapesContract.balanceOf(addr1.address, 5)).to.equal(1);
   });
 });

@@ -14,13 +14,12 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
 
     struct Collection {
         Counters.Counter nextID;
-        uint256 maxSupply;
+        uint256 endID;
     }
     
-    Counters.Counter private _supply;
-    uint256 public constant MAX_COLLECTION_SIZE = 256_000; 
     address public gatekeeper;
 
+    Counters.Counter private _supply;
     BitMaps.BitMap private _usedNonces;
 
     Collection[] public collections;
@@ -37,18 +36,14 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
         gatekeeper = aGatekeeper;
     }
 
-    function addCollection(uint256 maxSupply) public onlyOwner {
-        require(maxSupply <= MAX_COLLECTION_SIZE, "Collection is too large");
-        collections.push(Collection({ nextID: Counters.Counter(0), maxSupply: maxSupply }));
+    function addCollection(uint256 startID, uint256 endID) public onlyOwner {
+        require(startID < endID, "Start should preceede end");
+        require(collections.length == 0 || collections[collections.length - 1].endID <= startID, "Collections shouldn't overlap");
+        collections.push(Collection({ nextID: Counters.Counter(startID), endID: endID }));
     }
 
     function keyHash(uint256 collection, uint256 nonce, address addr) public pure returns (bytes32) {
         return ECDSA.toEthSignedMessageHash(abi.encodePacked(collection, nonce, addr));
-    }
-
-    function tokenID(uint256 collectionID, uint256 relativeTokenID) public view returns (uint256) {
-        require(collectionID < collections.length, "Collection doesn't exist");
-        return collectionID << 128 + relativeTokenID;
     }
 
     function isKeyUsed(uint256 nonce) public view returns(bool) {
@@ -60,12 +55,12 @@ contract DApes is ERC1155Upgradeable, OwnableUpgradeable {
         require(ECDSA.recover(kh, signature) == gatekeeper, "Invalid access key");
         require(isKeyUsed(nonce), "Key already used");
         uint256 newID = collections[collectionID].nextID.current();
-        require(newID < collections[collectionID].maxSupply, "Minted out");
+        require(newID < collections[collectionID].endID, "Minted out");
         
         _usedNonces.set(nonce);
         collections[collectionID].nextID.increment();
         _supply.increment();
-        _mint(msg.sender, tokenID(collectionID, newID), 1, "");
+        _mint(msg.sender, newID, 1, "");
     }
 
     function totalSupply() public view returns (uint256) {

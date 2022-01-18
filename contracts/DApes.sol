@@ -15,10 +15,13 @@ contract DApes is ERC1155PausableUpgradeable, UUPSUpgradeable, OwnableUpgradeabl
     using BitMaps for BitMaps.BitMap;
 
     struct Collection {
+        uint256 startID;
         Counters.Counter nextID;
         uint256 endID;
     }
     
+    event CollectionMinted(uint256 collection, uint256 nonce, uint256 tokenID, address to);
+
     address public gatekeeper;
 
     Counters.Counter private _supply;
@@ -43,7 +46,7 @@ contract DApes is ERC1155PausableUpgradeable, UUPSUpgradeable, OwnableUpgradeabl
     function addCollection(uint256 startID, uint256 endID) public onlyOwner {
         require(startID < endID, "Start should preceede end");
         require(collections.length == 0 || collections[collections.length - 1].endID <= startID, "Collections shouldn't overlap");
-        collections.push(Collection({ nextID: Counters.Counter(startID), endID: endID }));
+        collections.push(Collection({ nextID: Counters.Counter(startID), endID: endID, startID: startID }));
     }
 
     function amendTopCollection(uint256 newEndID) public onlyOwner {
@@ -77,6 +80,7 @@ contract DApes is ERC1155PausableUpgradeable, UUPSUpgradeable, OwnableUpgradeabl
         _supply.increment();
         collection.nextID.increment();
 
+        emit CollectionMinted(collectionID, nonce, newID, msg.sender);
         _mint(msg.sender, newID, 1, "");
     }
 

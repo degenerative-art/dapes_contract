@@ -63,12 +63,27 @@ describe("DApes", function () {
   })
 
   it("Can mint with proper signed key", async function () {
-    await dapesContract.addCollection(0, 10);
+    await dapesContract.addCollection(1, 10);
     let indices = await dapesContract.collections(0);
-    expect(indices[0][0]).to.equal(0);
-    expect(indices[1]).to.equal(10);
+    expect(indices.startID).to.equal(1);
+    expect(indices.nextID._value).to.equal(1);
+    expect(indices.endID).to.equal(10);
+    
     mintContext.connect(addr1);
     await expect(mintContext.mint(0)).to.be.not.reverted;
+
+    indices = await dapesContract.collections(0);
+    expect(indices.startID).to.equal(1);
+    expect(indices.nextID._value).to.equal(2);
+    expect(indices.endID).to.equal(10);
+  });
+
+  it("Emits CollectionMinted event on mint",async function () {
+    await dapesContract.addCollection(0, 10);
+    
+    mintContext.connect(addr1);
+    await expect(mintContext.mint(0)).to.emit(dapesContract, 'CollectionMinted').withArgs(0, 0, 0, addr1.address);
+    await expect(mintContext.mint(0)).to.emit(dapesContract, 'CollectionMinted').withArgs(0, 1, 1, addr1.address);
   });
 
   it("Cannot be minted with stolen key", async function() {
